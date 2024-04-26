@@ -3,6 +3,7 @@ module github.com/mmihic/sheets
 go 1.20
 
 require (
+	github.com/alecthomas/participle/v2 v2.1.1
 	github.com/mmihic/golib v0.1.19
 	github.com/stretchr/testify v1.7.2
 )
