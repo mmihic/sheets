@@ -33,11 +33,6 @@ func ParsePos(s string) (Pos, error) {
 	}, nil
 }
 
-// IsValidPos returns true if the given string is a valid position.
-func IsValidPos(s string) bool {
-	return len(rePosition.FindStringSubmatch(s)) == 3
-}
-
 // A Range is a description of a collection of cells in a sheet.
 // Uses 0-based indexing.
 type Range struct {
@@ -59,6 +54,17 @@ func ParseRange(s string) (Range, error) {
 	}
 
 	startCol, endCol, startRow, endRow := elts[1], elts[3], elts[2], elts[4]
+
+	// There needs to be one of row or column in the start and end positions. e.g.
+	// `:A15` is not valid, `A15:` is not valid, `:` is definitely not valid.
+	if len(startRow) == 0 && len(startCol) == 0 {
+		return Range{}, fmt.Errorf("invalid range: expected A23:B54 found '%s'", s)
+	}
+
+	if len(endRow) == 0 && len(endCol) == 0 {
+		return Range{}, fmt.Errorf("invalid range: expected A23:B54 found '%s'", s)
+	}
+
 	r := Range{
 		StartCol: 0,
 		EndCol:   MaxColumn,
@@ -113,11 +119,6 @@ func (r Range) String() string {
 	}
 
 	return fmt.Sprintf("%s%s:%s%s", startCol, startRow, endCol, endRow)
-}
-
-// IsValidRange returns true if the given string is a valid range.
-func IsValidRange(s string) bool {
-	return len(reRange.FindStringSubmatch(s)) == 5
 }
 
 const (
