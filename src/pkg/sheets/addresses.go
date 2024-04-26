@@ -50,19 +50,38 @@ type Range struct {
 func ParseRange(s string) (Range, error) {
 	elts := reRange.FindStringSubmatch(s)
 	if len(elts) != 5 {
-		return Range{}, fmt.Errorf("invalid range: expected A23:B54 found '%s'", s)
+		return Range{}, fmt.Errorf(msgInvalidRange, s)
 	}
 
 	startCol, endCol, startRow, endRow := elts[1], elts[3], elts[2], elts[4]
 
-	// There needs to be one of row or column in the start and end positions. e.g.
-	// `:A15` is not valid, `A15:` is not valid, `:` is definitely not valid.
-	if len(startRow) == 0 && len(startCol) == 0 {
-		return Range{}, fmt.Errorf("invalid range: expected A23:B54 found '%s'", s)
-	}
-
-	if len(endRow) == 0 && len(endCol) == 0 {
-		return Range{}, fmt.Errorf("invalid range: expected A23:B54 found '%s'", s)
+	// Look for invalid combinations of issues:
+	// * 13:23 is valid
+	// * A:C is valid
+	// * A13:23 is valid
+	// * 13:C23 is valid
+	// * A13:C23 is valid
+	//
+	// But:
+	// * A:23 is not valid
+	// * 23:C is not valid
+	// * :A is not valid
+	// * :23 is not valid
+	// * A: is not valid
+	// * 23: is not valid
+	switch {
+	case startCol == "" && startRow == "":
+		// Catches :A and :23
+		return Range{}, fmt.Errorf(msgInvalidRange, s)
+	case endCol == "" && endRow == "":
+		// Catches A: and 23:
+		return Range{}, fmt.Errorf(msgInvalidRange, s)
+	case startCol != "" && endCol == "" && startRow == "" && endRow != "":
+		// Catches A:23
+		return Range{}, fmt.Errorf(msgInvalidRange, s)
+	case startCol == "" && endCol != "" && startRow != "" && endRow == "":
+		// Catches 23:C
+		return Range{}, fmt.Errorf(msgInvalidRange, s)
 	}
 
 	r := Range{
@@ -166,6 +185,10 @@ func rowOffset(rowText string) int {
 	row1Index, _ := strconv.Atoi(rowText)
 	return row1Index - 1 // convert to 0-based index
 }
+
+const (
+	msgInvalidRange = "invalid range: expected A23:B54 found '%s'"
+)
 
 var (
 	rePosition = regexp.MustCompile(`^([A-Za-z]{1,3})(\d+)$`)

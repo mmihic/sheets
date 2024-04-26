@@ -102,6 +102,8 @@ func TestParseRange(t *testing.T) {
 		}, ""},
 		{"A23", Range{}, "invalid range: expected A23:B54 found 'A23'"},
 		{":A45", Range{}, "invalid range: expected A23:B54 found ':A45'"},
+		{"A:23", Range{}, "invalid range: expected A23:B54 found 'A:23'"},
+		{"23:A", Range{}, "invalid range: expected A23:B54 found '23:A'"},
 		{":", Range{}, "invalid range: expected A23:B54 found ':'"},
 		{"25A:A45", Range{}, "invalid range: expected A23:B54 found '25A:A45'"},
 		{"A25:45B", Range{}, "invalid range: expected A23:B54 found 'A25:45B'"},
