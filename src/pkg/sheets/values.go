@@ -1,4 +1,4 @@
-package sheet
+package sheets
 
 import (
 	"fmt"
@@ -163,6 +163,8 @@ var (
 		time.DateOnly,
 		time.DateTime,
 		time.UnixDate,
+		time.Kitchen,
+		"2006/01/02",
 	}
 
 	_ Value = Float64Value(100)

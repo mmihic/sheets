@@ -1,4 +1,4 @@
-package sheet
+package sheets
 
 import (
 	"fmt"
@@ -31,6 +31,11 @@ func ParsePos(s string) (Pos, error) {
 		Col: columnOffset(elts[1]),
 		Row: rowOffset(elts[2]),
 	}, nil
+}
+
+// IsValidPos returns true if the given string is a valid position.
+func IsValidPos(s string) bool {
+	return len(rePosition.FindStringSubmatch(s)) == 3
 }
 
 // A Range is a description of a collection of cells in a sheet.
@@ -108,6 +113,11 @@ func (r Range) String() string {
 	}
 
 	return fmt.Sprintf("%s%s:%s%s", startCol, startRow, endCol, endRow)
+}
+
+// IsValidRange returns true if the given string is a valid range.
+func IsValidRange(s string) bool {
+	return len(reRange.FindStringSubmatch(s)) == 5
 }
 
 const (
