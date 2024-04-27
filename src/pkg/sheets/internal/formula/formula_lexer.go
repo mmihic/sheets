@@ -126,7 +126,8 @@ func consumeString(lex backtrack.Lexer) (string, error) {
 	case "TickQuotes":
 		return consumeStringUsing(lex, "TickQuotedStringChars", "TickQuotes")
 	default:
-		return "", TokenExpectedError(tok, "String")
+		return "", ParseErrorf(tok.Pos, "expected one of [String], found '%s'", tok.Value)
+
 	}
 }
 
