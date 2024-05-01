@@ -140,6 +140,48 @@ func (r Range) String() string {
 	return fmt.Sprintf("%s%s:%s%s", startCol, startRow, endCol, endRow)
 }
 
+// StartPos returns the start position of the range
+func (r Range) StartPos() Pos {
+	return Pos{Row: r.StartRow, Col: r.StartCol}
+}
+
+// EndPos returns the end position of the range
+func (r Range) EndPos() Pos {
+	return Pos{Row: r.EndRow, Col: r.EndCol}
+}
+
+// Contains returns true if the range contains the given position.
+func (r Range) Contains(pos Pos) bool {
+	return pos.Col >= r.StartCol && pos.Col <= r.EndCol && pos.Row >= r.StartRow && pos.Row <= r.EndRow
+}
+
+// ContainsRange returns true if this range contains another range.
+func (r Range) ContainsRange(other Range) bool {
+	return r.StartRow <= other.StartRow && r.EndRow >= other.EndRow &&
+		r.StartCol <= other.StartCol && r.EndCol >= other.EndCol
+}
+
+// NumCells returns the number of cells covered by the range.
+func (r Range) NumCells() int {
+	numRows := (r.EndRow - r.StartRow) + 1
+	numCols := (r.EndCol - r.StartCol) + 1
+	return numCols * numRows
+}
+
+// NextPos advances the given position within the range.
+func (r Range) NextPos(pos Pos) (nextPos Pos, insideRange bool) {
+	// Increment by column, spilling over to the next row if we've reached the
+	// last column we should be processing.
+	if pos.Col == r.EndCol {
+		nextPos = Pos{Row: pos.Row + 1, Col: r.StartCol}
+	} else {
+		nextPos = Pos{Row: pos.Row, Col: pos.Col + 1}
+	}
+
+	insideRange = r.Contains(nextPos)
+	return
+}
+
 const (
 	// MaxRow is used as the value of EndRow to indicate that the range
 	// covers up to the maximum row in the sheet.

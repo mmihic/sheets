@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPos(t *testing.T) {
@@ -127,4 +128,82 @@ func TestParseRange(t *testing.T) {
 			assert.Equal(t, tt.expected, r)
 		})
 	}
+}
+
+func TestRange_Contains(t *testing.T) {
+	r := Range{
+		StartCol: 15, StartRow: 12,
+		EndCol: 25, EndRow: 33,
+	}
+	for _, tt := range []struct {
+		pos      Pos
+		expected bool
+	}{
+		{Pos{Row: 11, Col: 16}, false},
+		{Pos{Row: 12, Col: 16}, true},
+		{Pos{Row: 22, Col: 23}, true},
+		{Pos{Row: 33, Col: 25}, true},
+		{Pos{Row: 34, Col: 25}, false},
+		{Pos{Row: 33, Col: 26}, false},
+	} {
+		t.Run(tt.pos.String(), func(t *testing.T) {
+			assert.Equal(t, tt.expected, r.Contains(tt.pos))
+		})
+	}
+}
+
+func TestRange_NextPos(t *testing.T) {
+	r := mustParseRange(t, "D23:F25")
+	pos := r.StartPos()
+
+	var positions []string
+	for {
+		positions = append(positions, pos.String())
+		nextPos, hasNext := r.NextPos(pos)
+		if !hasNext {
+			break
+		}
+
+		pos = nextPos
+	}
+
+	assert.Equal(t, []string{
+		"D23", "E23", "F23",
+		"D24", "E24", "F24",
+		"D25", "E25", "F25"}, positions)
+}
+
+func TestRange_ContainsRange(t *testing.T) {
+	r := mustParseRange(t, "D23:Q33")
+	for _, tt := range []struct {
+		name     string
+		r        Range
+		expected bool
+	}{
+		{"above the top of the range", mustParseRange(t, "E19:F22"), false},
+		{"to the right of the range", mustParseRange(t, "Z24:AA29"), false},
+		{"below the bottom of the range", mustParseRange(t, "E55:L75"), false},
+		{"to the left of the range", mustParseRange(t, "A24:L29"), false},
+		{"fully inside the range", mustParseRange(t, "E26:L29"), true},
+		{"at the top-left corner of the range", mustParseRange(t, "D23:L29"), true},
+		{"at the bottom-left corner of the range", mustParseRange(t, "D26:D33"), true},
+		{"at the top-right corner of the range", mustParseRange(t, "Q23:Q26"), true},
+		{"at the bottom-right corner of the range", mustParseRange(t, "Q26:Q33"), true},
+		{"exactly aligned with the range", mustParseRange(t, "D23:Q33"), true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, r.ContainsRange(tt.r))
+		})
+	}
+}
+
+func TestRange_NumCells(t *testing.T) {
+	assert.Equal(t, 42, mustParseRange(t, "C4:H10").NumCells())
+	assert.Equal(t, 30, mustParseRange(t, "D4:H9").NumCells())
+}
+
+func mustParseRange(t *testing.T, s string) Range {
+	r, err := ParseRange(s)
+	require.NoError(t, err)
+	return r
 }
