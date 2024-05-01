@@ -1,6 +1,7 @@
 package sheets
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -64,7 +65,7 @@ func TestSliceValueIter(t *testing.T) {
 		values  []string
 	)
 
-	for iter.Next() {
+	for iter.Next(context.TODO()) {
 		s, err := iter.Value().AsString()
 		require.NoError(t, err)
 		require.NoError(t, iter.Err())
@@ -82,13 +83,13 @@ func TestSliceValueIter(t *testing.T) {
 func TestSingleValueIter(t *testing.T) {
 	iter := SingleValueIter(StringValue("Foo"))
 	require.Equal(t, 1, iter.Len())
-	require.True(t, iter.Next())
+	require.True(t, iter.Next(context.TODO()))
 	require.Equal(t, 0, iter.Index())
 	require.Equal(t, StringValue("Foo"), iter.Value())
 	require.NoError(t, iter.Err())
 
 	for i := 0; i < 10; i++ {
-		require.False(t, iter.Next())
+		require.False(t, iter.Next(context.TODO()))
 		require.NoError(t, iter.Err())
 		require.Equal(t, 1, iter.Len())
 	}

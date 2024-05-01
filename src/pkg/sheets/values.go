@@ -1,6 +1,7 @@
 package sheets
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"time"
@@ -77,7 +78,7 @@ func (v TimeValue) AsTime() (time.Time, error) {
 
 // A ValueIter is an iterator over a set of values.
 type ValueIter interface {
-	Next() bool
+	Next(ctx context.Context) bool
 	Err() error
 	Value() Value
 	Index() int
@@ -96,7 +97,7 @@ type sliceValueIter struct {
 	nextIdx int
 }
 
-func (iter *sliceValueIter) Next() bool {
+func (iter *sliceValueIter) Next(_ context.Context) bool {
 	if iter.nextIdx >= len(iter.vals) {
 		return false
 	}
@@ -132,7 +133,7 @@ type singleValueIter struct {
 	val      Value
 }
 
-func (iter *singleValueIter) Next() bool {
+func (iter *singleValueIter) Next(_ context.Context) bool {
 	if iter.consumed {
 		return false
 	}
