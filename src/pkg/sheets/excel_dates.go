@@ -1,6 +1,7 @@
 package sheets
 
 import (
+	"fmt"
 	"math"
 	"time"
 )
@@ -19,14 +20,25 @@ var (
 	epochStart = time.Date(1899, time.December, 30, 0, 0, 0, 0, time.UTC)
 )
 
+// ParseTime parses a string as a time, using the support date and time formats.
+func ParseTime(s string) (time.Time, error) {
+	for _, layout := range supportedTimeLayouts {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t, nil
+		}
+	}
+
+	return time.Time{}, fmt.Errorf("'%s' cannot be parsed as a date or time", s)
+}
+
 // FromExcelTime converts an Excel fractional datetime to the appropriate golang time.Time.
-func FromExcelTime(n float64) (time.Time, error) {
+func FromExcelTime(n float64) time.Time {
 	datePart := float64(int64(n))
 	day, month, year := fromExcelDate(datePart)
 
 	timePart := n - datePart + roundEpsilon
 	hour, minute, second, nano := fromExcelTimeOfDay(timePart)
-	return time.Date(year, month, day, hour, minute, second, nano, time.UTC).Truncate(time.Second), nil
+	return time.Date(year, month, day, hour, minute, second, nano, time.UTC).Truncate(time.Second)
 }
 
 // fromExcelDate converts a fraction whose integer portion is an Excel numeric
@@ -52,7 +64,7 @@ func fromExcelTimeOfDay(fraction float64) (hour, minute, second, nanosecond int)
 }
 
 // ToExcelTime converts a golang time.Time to the Excel fractional date equivalent.
-func ToExcelTime(tm time.Time) (float64, error) {
+func ToExcelTime(tm time.Time) float64 {
 	tm = tm.UTC()
 
 	var (
@@ -60,7 +72,7 @@ func ToExcelTime(tm time.Time) (float64, error) {
 		timeFraction = toExcelTimeOfDay(tm.Hour(), tm.Minute(), tm.Second(), tm.Nanosecond())
 	)
 
-	return roundFloat(dayFraction+timeFraction, 15), nil
+	return roundFloat(dayFraction+timeFraction, 15)
 }
 
 // toExcelDate converts a (day, month, year) into the internal numeric format
@@ -84,3 +96,17 @@ func roundFloat(val float64, precision uint) float64 {
 	ratio := math.Pow(10, float64(precision))
 	return math.Round(val*ratio) / ratio
 }
+
+var (
+	supportedTimeLayouts = []string{
+		time.RFC3339,
+		time.DateOnly,
+		time.DateTime,
+		time.UnixDate,
+		time.Kitchen,
+		"2006/01/02",
+		"01/02/2006",
+		"01/02/06",
+		"01/06",
+	}
+)

@@ -22,19 +22,13 @@ func TestToFromTime(t *testing.T) {
 		{34_638.924664351851852, timex.MustParseTime(rfc3339Milli, "1994-10-31T22:11:31.00Z")},
 	} {
 		t.Run(tt.expected.String(), func(t *testing.T) {
-			tm, err := FromExcelTime(tt.fraction)
-			if !assert.NoError(t, err) {
-				return
-			}
+			tm := FromExcelTime(tt.fraction)
 
 			if !assert.Equal(t, tt.expected, tm) {
 				return
 			}
 
-			fraction, err := ToExcelTime(tm)
-			if !assert.NoError(t, err) {
-				return
-			}
+			fraction := ToExcelTime(tm)
 
 			assert.Equal(t, tt.fraction, fraction)
 		})
