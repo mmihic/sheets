@@ -71,7 +71,7 @@ func (v StringValue) valueMarker() {}
 func (v StringValue) ToFloat64() (float64, error) {
 	n, err := strconv.ParseFloat(string(v), 64)
 	if err != nil {
-		return 0, &ValueError{fmt.Sprintf("unable to convert '%s' to float", v)}
+		return 0, ValueErrorf("unable to convert '%s' to float", v)
 	}
 
 	return n, nil
@@ -206,7 +206,7 @@ func ParseBool(s string) (bool, error) {
 	case "FALSE":
 		return false, nil
 	default:
-		return false, &ValueError{fmt.Sprintf("'%s' is not a valid boolean value", s)}
+		return false, ValueErrorf("'%s' is not a valid boolean value", s)
 	}
 }
 
