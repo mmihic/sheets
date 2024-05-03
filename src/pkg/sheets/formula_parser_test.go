@@ -55,7 +55,7 @@ func TestParseFormula(t *testing.T) {
 						Value: Float64Value(1),
 					},
 					&Constant{
-						Value: Float64Value(0),
+						Value: BoolValue(false),
 					},
 				},
 			}, "",
@@ -77,12 +77,12 @@ func TestParseFormula(t *testing.T) {
 		},
 		{
 			`True`, &Constant{
-				Value: Float64Value(1),
+				Value: BoolValue(true),
 			}, "",
 		},
 		{
 			`FALSE`, &Constant{
-				Value: Float64Value(0),
+				Value: BoolValue(false),
 			}, "",
 		},
 		{

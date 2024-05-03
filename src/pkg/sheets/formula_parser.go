@@ -1,7 +1,6 @@
 package sheets
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/mmihic/sheets/src/pkg/sheets/internal/formula"
@@ -167,48 +166,9 @@ func parseConstant(lex *formula.Lexer) (Formula, error) {
 	}
 
 	switch tok.Type {
-	case formula.TokenTypeTrue, formula.TokenTypeFalse:
-		b, err := strconv.ParseBool(tok.Value)
-		if err != nil {
-			return nil, formula.WrapParseError(tok.Position, err)
-		}
-
-		n := 0.0
-		if b {
-			n = 1.0
-		}
-
+	case formula.TokenTypeTrue, formula.TokenTypeFalse, formula.TokenTypeString, formula.TokenTypeNumber:
 		return &Constant{
-			Value: Float64Value(n),
-		}, nil
-
-	case formula.TokenTypeString:
-		val := StringValue(tok.Value)
-
-		// Try to convert to a better format
-		if tm, err := val.AsTime(); err == nil {
-			return &Constant{
-				Value: TimeValue(tm),
-			}, nil
-		}
-
-		if n, err := val.AsFloat64(); err == nil {
-			return &Constant{
-				Value: Float64Value(n),
-			}, nil
-		}
-
-		return &Constant{
-			Value: val,
-		}, nil
-	case formula.TokenTypeNumber:
-		n, err := strconv.ParseFloat(tok.Value, 64)
-		if err != nil {
-			return nil, formula.WrapParseError(tok.Position, err)
-		}
-
-		return &Constant{
-			Value: Float64Value(n),
+			Value: StringToValue(tok.Value),
 		}, nil
 
 	default:
