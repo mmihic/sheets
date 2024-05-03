@@ -2,6 +2,7 @@ package sheets
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 // Value is a cell value.
 type Value interface {
 	ToFloat64() (float64, error)
+	fmt.Stringer
 
 	valueMarker()
 }
@@ -41,6 +43,10 @@ func StringToValue(s string) Value {
 	return StringValue(s)
 }
 
+func (v Float64Value) String() string {
+	return strconv.FormatFloat(float64(v), 'f', -1, 64)
+}
+
 func (v Float64Value) valueMarker() {}
 
 // ToFloat64 converts the value to a float64.
@@ -55,6 +61,10 @@ func (v TimeValue) ToFloat64() (float64, error) {
 	return ToExcelTime(time.Time(v)), nil
 }
 
+func (v TimeValue) String() string {
+	return time.Time(v).Format(time.RFC3339)
+}
+
 func (v StringValue) valueMarker() {}
 
 // ToFloat64 converts the value to a float64.
@@ -65,6 +75,10 @@ func (v StringValue) ToFloat64() (float64, error) {
 	}
 
 	return n, nil
+}
+
+func (v StringValue) String() string {
+	return string(v)
 }
 
 func (v BoolValue) valueMarker() {}
@@ -78,6 +92,14 @@ func (v BoolValue) ToFloat64() (float64, error) {
 	return 0, nil
 }
 
+func (v BoolValue) String() string {
+	if v {
+		return "TRUE"
+	}
+
+	return "FALSE"
+}
+
 // ErrorValue is a value that is an error.
 type ErrorValue struct {
 	Err error
@@ -88,6 +110,10 @@ func (v ErrorValue) valueMarker() {}
 // ToFloat64 converts the value to a float64.
 func (v ErrorValue) ToFloat64() (float64, error) {
 	return 0, v.Err
+}
+
+func (v ErrorValue) String() string {
+	return v.Err.Error()
 }
 
 // A ValueIter is an iterator over a set of values.
@@ -188,6 +214,7 @@ var (
 	_ Value = Float64Value(100)
 	_ Value = TimeValue(time.Time{})
 	_ Value = StringValue("")
+	_ Value = ErrorValue{errors.New("foo")}
 
 	_ ValueIter = &sliceValueIter{}
 	_ ValueIter = &singleValueIter{}

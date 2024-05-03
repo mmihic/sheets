@@ -11,6 +11,7 @@ type invalidValue string
 
 func (v invalidValue) valueMarker()                {}
 func (v invalidValue) ToFloat64() (float64, error) { return 0, nil }
+func (v invalidValue) String() string              { return "invalid value" }
 
 var (
 	_ Value = invalidValue("")
