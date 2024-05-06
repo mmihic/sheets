@@ -29,7 +29,6 @@ func TestParseFormula(t *testing.T) {
 			Right:    &Constant{Float64Value(45)},
 			Operator: "+",
 		}, ""},
-
 		{"100.3*17 + 45 >= A34", &Expression{
 			Left: &Expression{
 				Left: &Expression{
@@ -57,6 +56,39 @@ func TestParseFormula(t *testing.T) {
 			Right:    &CellReference{Sheet: "", Pos: mustParsePos(t, "A34")},
 			Operator: ">=",
 		}, ""},
+
+		{"(100.3*17 + 45) >= MEAN(A:A)", &Expression{
+			Left: &Expression{
+				Left: &Expression{
+					Left:     &Constant{Float64Value(100.3)},
+					Right:    &Constant{Float64Value(17)},
+					Operator: "*",
+				},
+				Right:    &Constant{Float64Value(45)},
+				Operator: "+",
+			},
+			Right: &FunctionCall{
+				FunctionName: "MEAN",
+				Args: []Formula{
+					&CellRangeReference{
+						Sheet: "",
+						Range: mustParseRange(t, "A:A"),
+					},
+				},
+			},
+			Operator: ">=",
+		}, ""},
+
+		{"100.3 + ", nil,
+			"error at 1:9: expected one of [Ident, CellRange, Number, String, True, False]: found '' (EOF)"},
+		{"100.3 + 45 *", nil,
+			"error at 1:13: expected one of [Ident, CellRange, Number, String, True, False]: found '' (EOF)"},
+		{"100.3 + 45 * 7 >= ", nil,
+			"error at 1:19: expected one of [Ident, CellRange, Number, String, True, False]: found '' (EOF)"},
+		{"(100.3 + )", nil,
+			"error at 1:10: expected one of [Ident, CellRange, Number, String, True, False]: found ')' ())"},
+		{"(100.3", nil,
+			"error at 1:7: expected one of [)]: found '' (EOF)"},
 
 		// Functions
 		{
@@ -208,5 +240,8 @@ func TestParseFormula(t *testing.T) {
 			assert.Equal(t, tt.expected, ref)
 		})
 	}
+}
+
+func TestFormula_String(t *testing.T) {
 
 }
