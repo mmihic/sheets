@@ -103,6 +103,19 @@ func (fc *FunctionCall) String() string {
 	return sb.String()
 }
 
+// An Expression applies an operator to the results of two formula.
+type Expression struct {
+	Left, Right Formula
+	Operator    Operator
+}
+
+func (expr *Expression) marker() {}
+
+// String returns the Expression in string form.
+func (expr *Expression) String() string {
+	return fmt.Sprintf("%s %s %s", expr.Left, expr.Operator, expr.Right)
+}
+
 var (
 	_ Formula = &CellReference{}
 	_ Formula = &CellRangeReference{}

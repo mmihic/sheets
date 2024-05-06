@@ -14,6 +14,50 @@ func TestParseFormula(t *testing.T) {
 		expected    Formula
 		expectedErr string
 	}{
+		// Expressions
+		{"100.3 + 45", &Expression{
+			Left:     &Constant{Float64Value(100.3)},
+			Right:    &Constant{Float64Value(45)},
+			Operator: "+",
+		}, ""},
+		{"100.3*17 + 45", &Expression{
+			Left: &Expression{
+				Left:     &Constant{Float64Value(100.3)},
+				Right:    &Constant{Float64Value(17)},
+				Operator: "*",
+			},
+			Right:    &Constant{Float64Value(45)},
+			Operator: "+",
+		}, ""},
+
+		{"100.3*17 + 45 >= A34", &Expression{
+			Left: &Expression{
+				Left: &Expression{
+					Left:     &Constant{Float64Value(100.3)},
+					Right:    &Constant{Float64Value(17)},
+					Operator: "*",
+				},
+				Right:    &Constant{Float64Value(45)},
+				Operator: "+",
+			},
+			Right:    &CellReference{Sheet: "", Pos: mustParsePos(t, "A34")},
+			Operator: ">=",
+		}, ""},
+
+		{"(100.3*17 + 45) >= A34", &Expression{
+			Left: &Expression{
+				Left: &Expression{
+					Left:     &Constant{Float64Value(100.3)},
+					Right:    &Constant{Float64Value(17)},
+					Operator: "*",
+				},
+				Right:    &Constant{Float64Value(45)},
+				Operator: "+",
+			},
+			Right:    &CellReference{Sheet: "", Pos: mustParsePos(t, "A34")},
+			Operator: ">=",
+		}, ""},
+
 		// Functions
 		{
 			"no_args()", &FunctionCall{
